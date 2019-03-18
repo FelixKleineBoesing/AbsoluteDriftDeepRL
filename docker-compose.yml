@@ -1,0 +1,9 @@
+version: '2'
+
+	services:
+
+		pythonAgent:
+      build: .
+      image: pythonAgent
+      volumes:
+      - ./src:/src/
