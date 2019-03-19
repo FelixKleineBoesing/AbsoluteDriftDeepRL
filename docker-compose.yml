@@ -1,9 +1,10 @@
+#Author: Felix KLeine Bösing
 version: '2'
 
-	services:
+services:
 
-		pythonAgent:
-      build: .
-      image: pythonAgent
-      volumes:
-      - ./src:/src/
+  pythonagent:
+    build: .
+    image: pythonagent
+    volumes:
+    - ./src:/src/

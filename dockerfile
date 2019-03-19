@@ -1,3 +1,6 @@
+# borrows from Jesus Alvarez
+# https://gitlab.com/nvidia/cuda/blob/ubuntu18.04/10.1/base/Dockerfile
+
 FROM ubuntu:18.04
 LABEL maintainer "NVIDIA CORPORATION <cudatools@nvidia.com>"
 
