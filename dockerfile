@@ -19,6 +19,8 @@ ENV LD_LIBRARY_PATH /usr/local/nvidia/lib:/usr/local/nvidia/lib64
 # For libraries in the cuda-compat-* package: https://docs.nvidia.com/cuda/eula/index.html#attachment-a
 RUN apt-get update && apt-get install -y --no-install-recommends \
         cuda-cudart-$CUDA_PKG_VERSION \
+        git \
+        make \
         cuda-compat-10-1=418.39-1 && \
     ln -s cuda-10.1 /usr/local/cuda && \
     rm -rf /var/lib/apt/lists/*
@@ -31,3 +33,7 @@ RUN echo "/usr/local/nvidia/lib" >> /etc/ld.so.conf.d/nvidia.conf && \
 ENV NVIDIA_VISIBLE_DEVICES all
 ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
 ENV NVIDIA_REQUIRE_CUDA "cuda>=10.1 brand=tesla,driver>=418,driver<419"
+
+FROM spmallick/opencv-docker:opencv
+
+RUN git clone https://github.com/pjreddie/darknet && cd darknet && make
