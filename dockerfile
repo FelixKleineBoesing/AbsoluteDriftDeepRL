@@ -2,6 +2,8 @@
 # https://gitlab.com/nvidia/cuda/blob/ubuntu18.04/10.1/base/Dockerfile
 
 FROM ubuntu:18.04
+FROM python:3.7
+
 LABEL maintainer "NVIDIA CORPORATION <cudatools@nvidia.com>"
 
 RUN apt-get update && apt-get install -y --no-install-recommends gnupg2 curl ca-certificates && \
@@ -37,3 +39,7 @@ ENV NVIDIA_REQUIRE_CUDA "cuda>=10.1 brand=tesla,driver>=418,driver<419"
 FROM spmallick/opencv-docker:opencv
 
 RUN git clone https://github.com/pjreddie/darknet && cd darknet && make
+
+COPY ./requirements/requirements.txt /requirements.txt
+RUN pip install -r requirements.txt
+
