@@ -1,45 +1,52 @@
-# borrows from Jesus Alvarez
-# https://gitlab.com/nvidia/cuda/blob/ubuntu18.04/10.1/base/Dockerfile
+FROM nvidia/cuda:9.0-cudnn7-devel
 
-FROM ubuntu:18.04
-FROM python:3.7
+## Pyton installation ##
+RUN apt-get update && apt-get install -y python3.5 python3-pip git
 
-LABEL maintainer "NVIDIA CORPORATION <cudatools@nvidia.com>"
+## OpenCV 3.4 Installation ##
+RUN apt-get install -y build-essential cmake
+RUN apt-get install -y qt5-default libvtk6-dev
+RUN apt-get install -y zlib1g-dev libjpeg-dev libwebp-dev libpng-dev libtiff5-dev libjasper-dev libopenexr-dev libgdal-dev
+RUN apt-get install -y libdc1394-22-dev libavcodec-dev libavformat-dev libswscale-dev libtheora-dev libvorbis-dev libxvidcore-dev libx264-dev yasm libopencore-amrnb-dev libopencore-amrwb-dev libv4l-dev libxine2-dev
+RUN apt-get install -y python-dev python-tk python-numpy python3-dev python3-tk python3-numpy
+RUN apt-get install -y unzip wget
+RUN wget https://github.com/opencv/opencv/archive/3.4.0.zip
+RUN unzip 3.4.0.zip
+RUN rm 3.4.0.zip
+WORKDIR /opencv-3.4.0
+RUN mkdir build
+WORKDIR /opencv-3.4.0/build
+RUN cmake -DBUILD_EXAMPLES=OFF ..
+RUN make -j4
+RUN make install
+RUN ldconfig
 
-RUN apt-get update && apt-get install -y --no-install-recommends gnupg2 curl ca-certificates && \
-    curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub | apt-key add - && \
-    echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64 /" > /etc/apt/sources.list.d/cuda.list && \
-    echo "deb https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64 /" > /etc/apt/sources.list.d/nvidia-ml.list && \
-    apt-get purge --autoremove -y curl && \
-    rm -rf /var/lib/apt/lists/*
 
-ENV CUDA_VERSION 10.1.105
-ENV CUDA_PKG_VERSION 10-1=$CUDA_VERSION-1
-ENV PATH /usr/local/nvidia/bin:/usr/local/cuda/bin:${PATH}
-ENV LD_LIBRARY_PATH /usr/local/nvidia/lib:/usr/local/nvidia/lib64
+## Downloading and compiling darknet ##
+WORKDIR /
+RUN apt-get install -y git
+RUN git clone https://github.com/pjreddie/darknet.git
+WORKDIR /darknet
+RUN sed -i '/GPU=0/c\GPU=1' Makefile
+RUN sed -i '/OPENCV=0/c\OPENCV=1' Makefile
+RUN make
+ENV DARKNET_HOME /darknet
+ENV LD_LIBRARY_PATH /darknet
 
-# For libraries in the cuda-compat-* package: https://docs.nvidia.com/cuda/eula/index.html#attachment-a
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        cuda-cudart-$CUDA_PKG_VERSION \
-        git \
-        make \
-        cuda-compat-10-1=418.39-1 && \
-    ln -s cuda-10.1 /usr/local/cuda && \
-    rm -rf /var/lib/apt/lists/*
+## Download and compile YOLO3-4-Py ##
+WORKDIR /
+RUN git clone https://github.com/madhawav/YOLO3-4-Py.git
+WORKDIR /YOLO3-4-Py
+RUN apt-get install -y pkg-config
+RUN pip3 install pkgconfig cython numpy
+ENV GPU 1
+ENV OPENCV 1
+RUN python3 setup.py build_ext --inplace
 
-# Required for nvidia-docker v1
-RUN echo "/usr/local/nvidia/lib" >> /etc/ld.so.conf.d/nvidia.conf && \
-    echo "/usr/local/nvidia/lib64" >> /etc/ld.so.conf.d/nvidia.conf
+## Download Models ##
+ADD ./download_models.sh /YOLO3-4-Py/download_models.sh
+RUN sh download_models.sh
 
-# nvidia-container-runtime
-ENV NVIDIA_VISIBLE_DEVICES all
-ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
-ENV NVIDIA_REQUIRE_CUDA "cuda>=10.1 brand=tesla,driver>=418,driver<419"
-
-FROM spmallick/opencv-docker:opencv
-
-RUN git clone https://github.com/pjreddie/darknet && cd darknet && make
-
-COPY ./requirements/requirements.txt /requirements.txt
-RUN pip install -r requirements.txt
-
+## Run test ##
+ADD ./docker_demo.py /YOLO3-4-Py/docker_demo.py
+CMD ["python3", "docker_demo.py"]
