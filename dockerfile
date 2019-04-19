@@ -1,4 +1,4 @@
-FROM nvidia/cuda:9.0-cudnn7-devel
+FROM nvidia/cuda:10.1-cudnn7-devel-ubuntu16.04
 
 ## Pyton installation ##
 RUN apt-get update && apt-get install -y python3.5 python3-pip git
@@ -49,4 +49,5 @@ RUN sh download_models.sh
 
 ## Run test ##
 ADD ./docker_demo.py /YOLO3-4-Py/docker_demo.py
-CMD ["python3", "docker_demo.py"]
+
+#CMD ["python3", "docker_demo.py"]
