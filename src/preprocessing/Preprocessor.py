@@ -35,7 +35,7 @@ class Preprocessor(abc.ABC):
 
 class RewardPreprocessor(Preprocessor):
     """
-    preprocessor that catches rewards
+    preprocessor that preprocesses image to catch the reward
     """
 
     def __init__(self, img_size: tuple):
@@ -56,7 +56,7 @@ class RewardPreprocessor(Preprocessor):
 
 class AgentPreprocessor(Preprocessor):
     """
-    preprocessor that catches states for the agent
+    preprocessor that preprocesses the image as a state for the agent
     """
 
     def __init__(self, img_size: tuple):
