@@ -4,11 +4,11 @@ from scipy.misc import imresize
 
 
 class Preprocessor(abc.ABC):
+    """
+    takes image and preprocess this for the agent /learner/reward catcher
+    """
 
     def __init__(self, img_size: tuple):
-        """
-        takes image and preprocess this for the agent /learner/reward catcher
-        """
         self.img_size = img_size
 
     @abc.abstractmethod
@@ -34,15 +34,9 @@ class Preprocessor(abc.ABC):
 
 
 class RewardPreprocessor(Preprocessor):
-
-    def __init__(self, img_size: tuple):
-        super().__init__(img_size=img_size)
-
-    def preprocess(self, img: np.ndarray):
-        pass
-
-
-class AgentPreprocessor(Preprocessor):
+    """
+    preprocessor that catches rewards
+    """
 
     def __init__(self, img_size: tuple):
         super().__init__(img_size=img_size)
@@ -54,6 +48,26 @@ class AgentPreprocessor(Preprocessor):
         img = self._normalize_img(img)
         return img
 
+    def _crop_image(self, img: np.ndarray):
+        # slice img here (crop top/bottom,  left/right edgeds which are not really neceessary
+        img = img[:, :, :]
+        return img
+
+
+class AgentPreprocessor(Preprocessor):
+    """
+    preprocessor that catches states for the agent
+    """
+
+    def __init__(self, img_size: tuple):
+        super().__init__(img_size=img_size)
+
+    def preprocess(self, img: np.ndarray):
+        img = self._crop_image(img)
+        img = self._resize_img(img)
+        img = self._convert_to_grey(img)
+        img = self._normalize_img(img)
+        return img
 
     def _crop_image(self, img: np.ndarray):
         # slice img here (crop top/bottom,  left/right edgeds which are not really neceessary
