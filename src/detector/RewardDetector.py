@@ -11,4 +11,6 @@ class RewardDetector:
         self.preprocessor = preprocessor
 
     def get_reward(self, img: np.ndarray):
-        preproceessed_img = self.preprocessor.preprocess(img)
+        preprocessed_img = self.preprocessor.preprocess(img)
+        reward = 0
+        return reward
