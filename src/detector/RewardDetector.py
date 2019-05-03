@@ -13,4 +13,5 @@ class RewardDetector:
     def get_reward(self, img: np.ndarray):
         preprocessed_img = self.preprocessor.preprocess(img)
         reward = 0
+        #TODO detect reward from preprocessed image
         return reward

@@ -50,6 +50,8 @@ class RewardPreprocessor(Preprocessor):
 
     def _crop_image(self, img: np.ndarray):
         # slice img here (crop top/bottom,  left/right edgeds which are not really neceessary
+        # TODO inspect image and crop unused  parts (top left bottom is the only area that is useful
+        # TODO since the reward is printed there
         img = img[:, :, :]
         return img
 
@@ -71,5 +73,6 @@ class AgentPreprocessor(Preprocessor):
 
     def _crop_image(self, img: np.ndarray):
         # slice img here (crop top/bottom,  left/right edgeds which are not really neceessary
+        # TODO inspect image and crop unused  parts
         img = img[:, :, :]
         return img
