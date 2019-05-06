@@ -1,6 +1,6 @@
 import numpy as np
 from src.preprocessing.Preprocessor import RewardPreprocessor, Preprocessor
-
+from scipy.misc import imread
 
 class RewardDetector:
     """
@@ -15,3 +15,10 @@ class RewardDetector:
         reward = 0
         #TODO detect reward from preprocessed image
         return reward
+
+
+if __name__=="__main__":
+    img_path = "../../data/img/reward_catching/20190505150812_1.jpg"
+    det = RewardDetector(RewardPreprocessor((512, 512)))
+    img = imread(img_path)
+    det.get_reward(img)

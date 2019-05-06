@@ -1,6 +1,6 @@
 import abc
 import numpy as np
-from scipy.misc import imresize
+
 
 
 class Preprocessor(abc.ABC):
@@ -29,6 +29,7 @@ class Preprocessor(abc.ABC):
 
     def _resize_img(self, img: np.ndarray):
         # resize img to specified range
+        from scipy.misc import imresize
         img = imresize(img, self.img_size)
         return img
 
