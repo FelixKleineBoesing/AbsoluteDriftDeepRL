@@ -53,7 +53,7 @@ class RewardPreprocessor(Preprocessor):
         # slice img here (crop top/bottom,  left/right edgeds which are not really neceessary
         # TODO inspect image and crop unused  parts (top left bottom is the only area that is useful
         # TODO since the reward is printed there
-        img = img[:, :, :]
+        img = img[18:68, 300:440, :]
         return img
 
 
