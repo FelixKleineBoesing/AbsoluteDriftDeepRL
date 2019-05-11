@@ -14,7 +14,10 @@ class RewardDetector:
 
     def get_reward(self, img: np.ndarray):
         preprocessed_img = self.preprocessor.preprocess(img)
+        max_brightness = np.max(preprocessed_img, 0)
+        # TODO cut here when value bigger than  0.8 to cut each nunber in an own np array
         plt.imshow(preprocessed_img[:, :, 0], interpolation='none', cmap='gray')
+
         plt.show()
         reward = 0
         #TODO detect reward from preprocessed image
