@@ -14,7 +14,28 @@ class RewardDetector:
 
     def get_reward(self, img: np.ndarray):
         preprocessed_img = self.preprocessor.preprocess(img)
-        max_brightness = np.max(preprocessed_img, 0)
+        # take only min value from top half since we don´t want to have that comma
+        min_brightness = np.min(preprocessed_img[:24, :, 0], 0)
+
+        # init control variables
+        symbol_found = False
+        indices = []
+        for i in reversed(range(2, min_brightness.shape[0])):
+            if min_brightness[i,] - min_brightness[i - 1,] > 0.3 and not symbol_found:
+                symbol_found = True
+                index = {"from": i}
+            if min_brightness[i ,] - min_brightness[i - 2,] > 0.3 and not symbol_found:
+                symbol_found = True
+                index = {"from": i}
+            if min_brightness[i,] - min_brightness[i - 1,] < -0.3 and symbol_found:
+                symbol_found = False
+                index = {"from": i, "to": i}
+                indices.append(index)
+            if min_brightness[i,] - min_brightness[i - 2,] < -0.3 and symbol_found:
+                symbol_found = False
+                index = {"from": i, "to": i}
+                indices.append(index)
+
         # TODO cut here when value bigger than  0.8 to cut each nunber in an own np array
         plt.imshow(preprocessed_img[:, :, 0], interpolation='none', cmap='gray')
 
