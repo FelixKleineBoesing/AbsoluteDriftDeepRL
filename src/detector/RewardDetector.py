@@ -15,6 +15,7 @@ class RewardDetector:
     def __init__(self, preprocessor: Preprocessor):
         assert isinstance(preprocessor, Preprocessor)
         self.preprocessor = preprocessor
+        # TODO load saved model if existing
         with tf.variable_scope("rewards", reuse=False):
             network = keras.models.Sequential()
             network.add(Dense(64, activation="relu", input_shape=(25, 25)))
@@ -69,6 +70,7 @@ class RewardDetector:
 
     def _train_network(self, numbers: np.ndarray, label: np.ndarray):
         self.network.fit(numbers, label, epochs=10, batch_size=16)
+        # TODO save fitted network
 
 
 
