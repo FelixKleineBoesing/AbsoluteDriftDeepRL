@@ -15,34 +15,38 @@ class RewardDetector:
     def get_reward(self, img: np.ndarray):
         preprocessed_img = self.preprocessor.preprocess(img)
         # take only min value from top half since we don´t want to have that comma
-        min_brightness = np.min(preprocessed_img[:24, :, 0], 0)
+
+        reward = 0
+        #TODO detect reward from preprocessed image
+        return reward
+
+    def _return_number(self, img: np.ndarray):
+        min_brightness_cols = np.min(img[:int(0.5 * img.shape[0]), :, 0], 0)
 
         # init control variables
         symbol_found = False
         indices = []
-        for i in reversed(range(2, min_brightness.shape[0])):
-            if min_brightness[i,] - min_brightness[i - 1,] > 0.3 and not symbol_found:
+        for i in range(min_brightness_cols.shape[0] - 2):
+            if min_brightness_cols[i, ] - min_brightness_cols[i + 1, ] > 0.3 and not symbol_found:
+            if min_brightness_cols[i, ] - min_brightness_cols[i + 1, ] > 0.3 and not symbol_found:
                 symbol_found = True
                 index = {"from": i}
-            if min_brightness[i ,] - min_brightness[i - 2,] > 0.3 and not symbol_found:
+            if min_brightness_cols[i, ] - min_brightness_cols[i + 2, ] > 0.3 and not symbol_found:
                 symbol_found = True
                 index = {"from": i}
-            if min_brightness[i,] - min_brightness[i - 1,] < -0.3 and symbol_found:
+            if min_brightness_cols[i - 1, ] - min_brightness_cols[i, ] < -0.3 and symbol_found:
                 symbol_found = False
-                index["to"] = i
+                index["to"] = i + 1
                 indices.append(index)
-            if min_brightness[i,] - min_brightness[i - 2,] < -0.3 and symbol_found:
+            if min_brightness_cols[i - 2, ] - min_brightness_cols[i, ] < -0.3 and symbol_found:
                 symbol_found = False
-                index["to"] = i
+                index["to"] = i + 2
                 indices.append(index)
 
         # TODO cut here when value bigger than  0.8 to cut each nunber in an own np array
         for index in indices:
-            plt.imshow(preprocessed_img[:, index["to"]: index["from"], 0], interpolation='none', cmap='gray')
+            plt.imshow(img[:, index["from"]: index["to"], 0], interpolation='none', cmap='gray')
             plt.show()
-        reward = 0
-        #TODO detect reward from preprocessed image
-        return reward
 
 
 if __name__=="__main__":

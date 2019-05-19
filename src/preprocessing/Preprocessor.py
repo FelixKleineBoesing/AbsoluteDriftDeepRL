@@ -2,7 +2,6 @@ import abc
 import numpy as np
 
 
-
 class Preprocessor(abc.ABC):
     """
     takes image and preprocess this for the agent /learner/reward catcher
@@ -47,6 +46,8 @@ class RewardPreprocessor(Preprocessor):
         img = self._resize_img(img)
         img = self._convert_to_grey(img)
         img = self._normalize_img(img)
+        img = self._cut_smaller(img)
+
         return img
 
     def _crop_image(self, img: np.ndarray):
@@ -54,6 +55,16 @@ class RewardPreprocessor(Preprocessor):
         # TODO inspect image and crop unused  parts (top left bottom is the only area that is useful
         # TODO since the reward is printed there
         img = img[18:68, 300:440, :]
+
+        return img
+
+    def _cut_smaller(self, img: np.ndarray):
+        min_brightness_rows = np.min(img[:, :, 0], 1)
+        # get rows with black color
+        bools = min_brightness_rows < 0.3
+        index_min = np.min(np.arange(min_brightness_rows.shape[0])[bools]) - 1
+        index_max = np.max(np.arange(min_brightness_rows.shape[0])[bools]) + 1
+        img = img[index_min:index_max, :, :]
         return img
 
 
