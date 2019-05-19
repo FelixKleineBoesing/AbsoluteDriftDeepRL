@@ -26,10 +26,10 @@ class Preprocessor(abc.ABC):
         img = img.mean(-1, keepdims=True)
         return img
 
-    def _resize_img(self, img: np.ndarray):
+    def _resize_img(self, img: np.ndarray, img_size: tuple):
         # resize img to specified range
         from scipy.misc import imresize
-        img = imresize(img, self.img_size)
+        img = imresize(img, img_size)
         return img
 
 
@@ -43,7 +43,7 @@ class RewardPreprocessor(Preprocessor):
 
     def preprocess(self, img: np.ndarray):
         img = self._crop_image(img)
-        img = self._resize_img(img)
+        img = self._resize_img(img, self.img_size)
         img = self._convert_to_grey(img)
         img = self._normalize_img(img)
         img = self._cut_smaller(img)
@@ -52,8 +52,6 @@ class RewardPreprocessor(Preprocessor):
 
     def _crop_image(self, img: np.ndarray):
         # slice img here (crop top/bottom,  left/right edgeds which are not really neceessary
-        # TODO inspect image and crop unused  parts (top left bottom is the only area that is useful
-        # TODO since the reward is printed there
         img = img[18:68, 300:440, :]
 
         return img
