@@ -29,17 +29,17 @@ class RewardDetector:
                 index = {"from": i}
             if min_brightness[i,] - min_brightness[i - 1,] < -0.3 and symbol_found:
                 symbol_found = False
-                index = {"from": i, "to": i}
+                index["to"] = i
                 indices.append(index)
             if min_brightness[i,] - min_brightness[i - 2,] < -0.3 and symbol_found:
                 symbol_found = False
-                index = {"from": i, "to": i}
+                index["to"] = i
                 indices.append(index)
 
         # TODO cut here when value bigger than  0.8 to cut each nunber in an own np array
-        plt.imshow(preprocessed_img[:, :, 0], interpolation='none', cmap='gray')
-
-        plt.show()
+        for index in indices:
+            plt.imshow(preprocessed_img[:, index["to"]: index["from"], 0], interpolation='none', cmap='gray')
+            plt.show()
         reward = 0
         #TODO detect reward from preprocessed image
         return reward
