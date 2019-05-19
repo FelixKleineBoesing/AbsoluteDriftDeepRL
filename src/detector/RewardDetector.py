@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 from keras.layers import Dense, Flatten
 import keras
+import os
 
 from src.preprocessing.Preprocessor import RewardPreprocessor, Preprocessor
 
@@ -15,6 +16,7 @@ class RewardDetector:
     def __init__(self, preprocessor: Preprocessor):
         assert isinstance(preprocessor, Preprocessor)
         self.preprocessor = preprocessor
+        self._save_file = "../../data/weights/reward/weights_reward.h5"
         # TODO load saved model if existing
         with tf.variable_scope("rewards", reuse=False):
             network = keras.models.Sequential()
@@ -23,6 +25,8 @@ class RewardDetector:
         self.network = network
         self.network.compile(optimizer="adam", loss="categorical_crossentropy",
                              metrics=["accuracy"])
+        if os.path.isfile(self._save_file):
+            self.network.load_weights(self._save_file)
 
     def get_reward(self, img: np.ndarray):
         preprocessed_img = self.preprocessor.preprocess(img)
@@ -70,12 +74,7 @@ class RewardDetector:
 
     def _train_network(self, numbers: np.ndarray, label: np.ndarray):
         self.network.fit(numbers, label, epochs=10, batch_size=16)
-        # TODO save fitted network
-
-
-
-
-
+        self.network.save_weights(self._save_file)
 
 if __name__=="__main__":
     img_path = "../../data/img/reward_catching/20190505150812_1.jpg"
