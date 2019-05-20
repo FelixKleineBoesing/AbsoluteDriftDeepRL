@@ -4,6 +4,9 @@ import tensorflow as tf
 from keras.layers import Dense
 import keras
 import os
+import matplotlib.pyplot as plt
+
+
 
 from src.preprocessing.Preprocessor import RewardPreprocessor, Preprocessor
 
@@ -30,8 +33,11 @@ class RewardDetector:
 
     def get_reward(self, img: np.ndarray):
         preprocessed_img = self.preprocessor.preprocess(img)
+        # TODO WE need to parse left rewards as well to see if reward is lost or gained
+        if np.min(preprocessed_img) > 0.5:
+            return 0
 
-        numbers = self._return_number(preprocessed_img)
+        numbers = self._return_numbers(preprocessed_img)
         self._predict_numbers(numbers)
         reward = 0
         #TODO detect reward from preprocessed image
@@ -42,7 +48,7 @@ class RewardDetector:
         numbers_pred = self.network(numbers)
         return numbers_pred
 
-    def _return_number(self, img: np.ndarray):
+    def _return_numbers(self, img: np.ndarray):
         min_brightness_cols = np.min(img[:int(0.5 * img.shape[0]), :, 0], 0)
 
         # init control variables
@@ -77,13 +83,13 @@ class RewardDetector:
         converted_targets = []
         # TODO check if one hot encodign from numpy is a thing
 
-    def _train_network(self, numbers: np.ndarray, label: np.ndarray):
+    def train_network(self, numbers: np.ndarray, label: np.ndarray):
         self.network.fit(numbers, label, epochs=10, batch_size=16)
         self.network.save_weights(self._save_file)
         self.trained = True
 
 if __name__=="__main__":
-    img_path = "../../data/img/reward_catching/20190505150812_1.jpg"
+    img_path = "../../data/img/reward_catching/00009_19140X10.jpg"
     det = RewardDetector(RewardPreprocessor((50, 200)))
     img = imread(img_path)
     det.get_reward(img)
