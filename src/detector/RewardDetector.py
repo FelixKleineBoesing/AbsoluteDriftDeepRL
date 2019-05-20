@@ -1,8 +1,7 @@
 import numpy as np
 from scipy.misc import imread
-import matplotlib.pyplot as plt
 import tensorflow as tf
-from keras.layers import Dense, Flatten
+from keras.layers import Dense
 import keras
 import os
 
@@ -25,6 +24,7 @@ class RewardDetector:
         self.network = network
         self.network.compile(optimizer="adam", loss="categorical_crossentropy",
                              metrics=["accuracy"])
+        self.trained = False
         if os.path.isfile(self._save_file):
             self.network.load_weights(self._save_file)
 
@@ -38,6 +38,7 @@ class RewardDetector:
         return reward
 
     def _predict_numbers(self, numbers: np.ndarray):
+        assert self.trained, "Network has to be trained on detecting reward first!"
         numbers_pred = self.network(numbers)
         return numbers_pred
 
@@ -72,9 +73,14 @@ class RewardDetector:
         numbers = numbers[1:, :, :]
         return numbers
 
+    def _encode_target(self, targets: list):
+        converted_targets = []
+        # TODO check if one hot encodign from numpy is a thing
+
     def _train_network(self, numbers: np.ndarray, label: np.ndarray):
         self.network.fit(numbers, label, epochs=10, batch_size=16)
         self.network.save_weights(self._save_file)
+        self.trained = True
 
 if __name__=="__main__":
     img_path = "../../data/img/reward_catching/20190505150812_1.jpg"
