@@ -55,6 +55,8 @@ class RewardDetector:
         symbol_found = False
         indices = []
         for i in range(min_brightness_cols.shape[0] - 2):
+            # TODO define start and end of number by other criteria, not difference, since there may be nearly black
+            # elements behind the reward. Define it by absolute value instead
             if min_brightness_cols[i, ] - min_brightness_cols[i + 1, ] > 0.3 and not symbol_found:
                 symbol_found = True
                 index = {"from": i}
