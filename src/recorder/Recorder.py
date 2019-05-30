@@ -44,6 +44,7 @@ class Recorder:
 
         return key_records
 
+
 if __name__ == "__main__":
     recorder = Recorder()
     recorder._record_key_strokes()

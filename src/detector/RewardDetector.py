@@ -38,7 +38,7 @@ class RewardDetector:
             return 0
 
         numbers = self._return_numbers(preprocessed_img)
-        self._predict_numbers(numbers)
+        #self._predict_numbers(numbers)
         reward = 0
         #TODO detect reward from preprocessed image
         return reward
@@ -60,22 +60,27 @@ class RewardDetector:
             if min_brightness_cols[i, ] - min_brightness_cols[i + 1, ] > 0.3 and not symbol_found:
                 symbol_found = True
                 index = {"from": i}
+                continue
             if min_brightness_cols[i, ] - min_brightness_cols[i + 2, ] > 0.3 and not symbol_found:
                 symbol_found = True
                 index = {"from": i}
+                continue
             if min_brightness_cols[i - 1, ] - min_brightness_cols[i, ] < -0.3 and symbol_found:
                 symbol_found = False
                 index["to"] = i + 1
                 indices.append(index)
+                continue
             if min_brightness_cols[i - 2, ] - min_brightness_cols[i, ] < -0.3 and symbol_found:
                 symbol_found = False
                 index["to"] = i + 2
                 indices.append(index)
+                continue
 
         numbers = []
         for index in indices:
             resized_img = self.preprocessor._resize_img(img[:, index["from"]:index["to"], 0], (25, 25)) / 255.
             numbers.append(resized_img)
+            plt.imshow(resized_img)
 
         numbers = np.stack(numbers)
         numbers = numbers[1:, :, :]
@@ -91,7 +96,7 @@ class RewardDetector:
         self.trained = True
 
 if __name__=="__main__":
-    img_path = "../../data/img/reward_catching/00009_19140X10.jpg"
+    img_path = "../../data/img/reward_catching/00007_2800X2.jpg"
     det = RewardDetector(RewardPreprocessor((50, 200)))
     img = imread(img_path)
     det.get_reward(img)
