@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.misc import imread
 import tensorflow as tf
-from keras.layers import Dense
+from keras.layers import Dense, Conv2D, Flatten, MaxPooling2D
 import keras
 import os
 import matplotlib.pyplot as plt
@@ -19,10 +19,12 @@ class RewardDetector:
         assert isinstance(preprocessor, Preprocessor)
         self.preprocessor = preprocessor
         self._save_file = "../../data/weights/reward/weights_reward.h5"
-        # TODO load saved model if existing
         with tf.variable_scope("rewards", reuse=False):
             network = keras.models.Sequential()
-            network.add(Dense(64, activation="relu", input_shape=(25, 25)))
+            network.add(Conv2D(32, strides=(3, 3), activation="relu", input_shape=(25, 25)))
+            network.add(MaxPooling2D((2, 2)))
+            network.add(Flatten())
+            network.add(Dense(64, activation="relu"))
             network.add(Dense(11, activation="softmax"))
         self.network = network
         self.network.compile(optimizer="adam", loss="categorical_crossentropy",
@@ -94,6 +96,7 @@ class RewardDetector:
         self.network.fit(numbers, label, epochs=10, batch_size=16)
         self.network.save_weights(self._save_file)
         self.trained = True
+
 
 if __name__=="__main__":
     img_path = "../../data/img/reward_catching/00007_2800X2.jpg"

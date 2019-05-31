@@ -25,12 +25,12 @@ def read_and_save_images(image_path: str):
         labels = [10 if char == "X" else int(char) for char in names[index]]
         if len(labels) == numbers.shape[0]:
             images_array.append(numbers)
-            all_labels.append(numbers)
+            all_labels += labels
         else:
             logging.warning("Image {} will be skipped since detected numbers and labels doesn´t fit togther.")
 
     data = np.concatenate(images_array, axis=0)
-    labels = to_categorical(np.array(names), num_classes=11)
+    labels = to_categorical(np.array(all_labels), num_classes=11)
     det.train_network(data, labels)
 
 
