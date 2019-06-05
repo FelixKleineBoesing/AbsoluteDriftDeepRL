@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.misc import imread
 import tensorflow as tf
-from keras.layers import Dense, Conv2D, Flatten, MaxPooling2D
+from tensorflow.keras.layers import Dense, Conv2D, Flatten, MaxPooling2D
 import keras
 import os
 import matplotlib.pyplot as plt
@@ -19,14 +19,12 @@ class RewardDetector:
         assert isinstance(preprocessor, Preprocessor)
         self.preprocessor = preprocessor
         self._save_file = "../../data/weights/reward/weights_reward.h5"
-        with tf.variable_scope("rewards", reuse=False):
-            network = keras.models.Sequential()
-            network.add(Conv2D(32, strides=(3, 3), activation="relu", input_shape=(25, 25)))
-            network.add(MaxPooling2D((2, 2)))
-            network.add(Flatten())
-            network.add(Dense(64, activation="relu"))
-            network.add(Dense(11, activation="softmax"))
-        self.network = network
+        self.network = tensorflow.keras.models.Sequential([
+            Conv2D(32, strides=(3, 3), activation="relu", input_shape=(25, 25)),
+            MaxPooling2D((2, 2)),
+            Flatten(),
+            Dense(64, activation="relu"),
+            Dense(11, activation="softmax")])
         self.network.compile(optimizer="adam", loss="categorical_crossentropy",
                              metrics=["accuracy"])
         self.trained = False
@@ -34,13 +32,19 @@ class RewardDetector:
             self.network.load_weights(self._save_file)
 
     def get_reward(self, img: np.ndarray):
-        preprocessed_img = self.preprocessor.preprocess(img)
+        preprocessed_img_right, preprocessed_img_left = self.preprocessor.preprocess(img)
         # TODO WE need to parse left rewards as well to see if reward is lost or gained
-        if np.min(preprocessed_img) > 0.5:
-            return 0
+        # this is just a real quick exit if there is no 
 
-        numbers = self._return_numbers(preprocessed_img)
-        #self._predict_numbers(numbers)
+        numbers_left = self._return_numbers(preprocessed_img_left)
+        numbers_right = self_return_numbers(preprocessed_img_right)
+        numbers_left = self._predict_numbers(numbers_left)
+        numbers_right = self._predict_numbers(numbers_right)
+        
+        def _get_label(numbers: np.ndarray):
+            indices = np.argmax(numbers, axis = 1)
+            #TODO build number here
+            
         reward = 0
         #TODO detect reward from preprocessed image
         return reward
@@ -88,12 +92,8 @@ class RewardDetector:
         numbers = numbers[1:, :, :]
         return numbers
 
-    def _encode_target(self, targets: list):
-        converted_targets = []
-        # TODO check if one hot encodign from numpy is a thing
-
     def train_network(self, numbers: np.ndarray, label: np.ndarray):
-        self.network.fit(numbers, label, epochs=10, batch_size=16)
+        self.network.fit(numbers, label, epochs=100, batch_size=16)
         self.network.save_weights(self._save_file)
         self.trained = True
 
