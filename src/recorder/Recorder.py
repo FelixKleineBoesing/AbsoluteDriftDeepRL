@@ -1,8 +1,6 @@
 import pyscreenshot as pysc
 import keyboard
 import datetime
-import time
-import pandas as pd
 import os
 import multiprocessing as mp
 import json
@@ -26,6 +24,9 @@ class Recorder:
 
         image_process.start()
         key_process.start()
+
+        image_process.join()
+        key_process.join()
 
     def _record_images(self, managed_dict, save_path: str):
         try:
