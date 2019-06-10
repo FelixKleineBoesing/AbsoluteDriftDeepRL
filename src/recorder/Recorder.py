@@ -1,6 +1,7 @@
 import pyscreenshot as pysc
 import keyboard
 import time
+import numpy as np
 import datetime
 import os
 import multiprocessing as mp
@@ -32,15 +33,17 @@ class Recorder:
         stopped = False
         images = []
         timestamps = []
-        while not stopped:
+        index = 0
+        while True:
             time_stamp = datetime.datetime.now()
-            image = pysc.grab()
+            image = np.array(pysc.grab())
             images.append(image)
             timestamps.append(time_stamp)
-        if len(images) > 0:
-            print(os.getcwd())
-            with open(save_path + "images.json", "w") as f:
-                json.dump({"images": images, "timestamps": timestamps}, f)
+            index += 1
+            if index % 100 == 0 and index > 0:
+                print("{} images saved".format(index))
+                with open(save_path + "images.json", "w") as f:
+                    json.dump({"images": images, "timestamps": timestamps}, f, cls=NumpyEncoder)
 
     @staticmethod
     def _record_key_strokes(save_path: str):
@@ -54,7 +57,14 @@ class Recorder:
             key_records = {"keys": keys, "times": times}
             print(os.getcwd())
             with open(save_path + "keys.json", "w") as f:
-                json.dump(key_records,f)
+                json.dump(key_records, f, cls=NumpyEncoder)
+
+
+class NumpyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return json.JSONEncoder.default(self, obj)
 
 
 if __name__ == "__main__":
