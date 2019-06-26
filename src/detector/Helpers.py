@@ -14,6 +14,7 @@ preprocessor = RewardPreprocessor((50, 200))
 def read_and_save_images(image_path: str):
     names = os.listdir(image_path)
     images = [image_path + image for image in names]
+
     names = [name[6:-4] for name in names if name[6:-4] != "_"]
 
     images_array = []
@@ -30,13 +31,22 @@ def read_and_save_images(image_path: str):
             logging.warning("Image {} will be skipped since detected numbers and labels doesn´t fit togther.")
 
     data = np.concatenate(images_array, axis=0)
+    data = data.reshape(data.shape + (1,))
+    test_data = data[-2:, :, :, :]
+    data = data[:-2, :, :, :]
+
     labels = to_categorical(np.array(all_labels), num_classes=11)
+    test_label = labels[-2:, :]
+    labels = labels[:-2, :]
+
     det.train_network(data, labels)
 
+    predictions = det.network.predict(test_data)
+    print(predictions)
+    print(test_label)
 
-
-def train_reward_detector():
-    pass
 
 if __name__=="__main__":
-    read_and_save_images("../../data/img/reward_catching/")
+    read_and_save_images("../../data/reward_catching/")
+
+

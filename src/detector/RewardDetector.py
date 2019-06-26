@@ -2,11 +2,8 @@ import numpy as np
 from scipy.misc import imread
 import tensorflow as tf
 from tensorflow.keras.layers import Dense, Conv2D, Flatten, MaxPooling2D
-import keras
 import os
 import matplotlib.pyplot as plt
-
-
 
 from src.preprocessing.Preprocessor import RewardPreprocessor, Preprocessor
 
@@ -19,8 +16,8 @@ class RewardDetector:
         assert isinstance(preprocessor, Preprocessor)
         self.preprocessor = preprocessor
         self._save_file = "../../data/weights/reward/weights_reward.h5"
-        self.network = tensorflow.keras.models.Sequential([
-            Conv2D(32, strides=(3, 3), activation="relu", input_shape=(25, 25)),
+        self.network = tf.keras.models.Sequential([
+            Conv2D(32, kernel_size=(3, 3), activation="relu", input_shape=(25, 25, 1)),
             MaxPooling2D((2, 2)),
             Flatten(),
             Dense(64, activation="relu"),
@@ -37,7 +34,7 @@ class RewardDetector:
         # this is just a real quick exit if there is no 
 
         numbers_left = self._return_numbers(preprocessed_img_left)
-        numbers_right = self_return_numbers(preprocessed_img_right)
+        numbers_right = self._return_numbers(preprocessed_img_right)
         numbers_left = self._predict_numbers(numbers_left)
         numbers_right = self._predict_numbers(numbers_right)
         
