@@ -1,9 +1,10 @@
 import pyscreenshot as pysc
 import keyboard
-import time
+import logging
 import numpy as np
 import datetime
 import os
+import time
 import multiprocessing as mp
 import json
 
@@ -15,7 +16,7 @@ class Recorder:
     takes game object and records states and actions
     """
 
-    def __init__(self, save_path: str = "../../data/records/"):
+    def __init__(self, save_path: str = "..\\..\\data\\records\\"):
         self.save_path = save_path
 
     def record(self):
@@ -30,23 +31,22 @@ class Recorder:
 
     @staticmethod
     def _record_images(save_path: str):
-        stopped = False
-        images = []
-        timestamps = []
+        logging.info("recording images")
         index = 0
         while True:
             time_stamp = datetime.datetime.now()
             image = np.array(pysc.grab())
-            images.append(image)
-            timestamps.append(time_stamp)
             index += 1
-            if index % 100 == 0 and index > 0:
+            if index % 100 == 0:
                 print("{} images saved".format(index))
-                with open(save_path + "images.json", "w") as f:
-                    json.dump({"images": images, "timestamps": timestamps}, f, cls=NumpyEncoder)
+            with open(save_path + r"images\{}.npy".format(str(time_stamp).replace(":", "-")), "wb+") as f:
+                np.save(f, image, allow_pickle=False)
+            while abs((time_stamp - datetime.datetime.now()).total_seconds()) < 0.4:
+                time.sleep(0.05)
 
     @staticmethod
     def _record_key_strokes(save_path: str):
+        logging.info("record key strokes")
         records = keyboard.record(until="space+esc")
         if len(records) > 0:
             times = []
@@ -68,5 +68,5 @@ class NumpyEncoder(json.JSONEncoder):
 
 
 if __name__ == "__main__":
-    recorder = Recorder()
+    recorder = Recorder(save_path="..\\..\\data\\records\\")
     recorder.record()
