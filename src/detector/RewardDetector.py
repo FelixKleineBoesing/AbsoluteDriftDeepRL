@@ -2,8 +2,10 @@ import numpy as np
 from scipy.misc import imread
 import tensorflow as tf
 from tensorflow.keras.layers import Dense, Conv2D, Flatten, MaxPooling2D
+from keras.utils.np_utils import to_categorical
 import os
 import matplotlib.pyplot as plt
+import logging
 
 from src.preprocessing.Preprocessor import RewardPreprocessor, Preprocessor
 
@@ -27,28 +29,43 @@ class RewardDetector:
         self.trained = False
         if os.path.isfile(self._save_file):
             self.network.load_weights(self._save_file)
+            self.trained = True
 
     def get_reward(self, img: np.ndarray):
-        preprocessed_img_right, preprocessed_img_left = self.preprocessor.preprocess(img)
+        preprocessed_img_right = self.preprocessor.preprocess(img)
         # TODO WE need to parse left rewards as well to see if reward is lost or gained
-        # this is just a real quick exit if there is no 
+        # this is just a real quick exit if there is no
 
-        numbers_left = self._return_numbers(preprocessed_img_left)
+        #numbers_left = self._return_numbers(preprocessed_img_left)
         numbers_right = self._return_numbers(preprocessed_img_right)
-        numbers_left = self._predict_numbers(numbers_left)
+        #numbers_left = self._predict_numbers(numbers_left)
         numbers_right = self._predict_numbers(numbers_right)
         
         def _get_label(numbers: np.ndarray):
-            indices = np.argmax(numbers, axis = 1)
-            #TODO build number here
-            
-        reward = 0
-        #TODO detect reward from preprocessed image
+            indices = np.argmax(numbers, axis=1)
+            number_left, multi = "", ""
+            multi_reached = False
+            for number in indices.tolist():
+                if number == 10:
+                    multi_reached = True
+                    continue
+                if not multi_reached:
+                    number_left += str(number)
+                else:
+                    multi += str(number)
+            return number_left, multi
+
+        number, multi = _get_label(numbers_right)
+        print(number)
+        print(multi)
+        reward = float(number) * float(multi)
         return reward
 
     def _predict_numbers(self, numbers: np.ndarray):
         assert self.trained, "Network has to be trained on detecting reward first!"
-        numbers_pred = self.network(numbers)
+        if len(numbers.shape) == 3:
+            numbers = numbers.reshape(numbers.shape + (1, ))
+        numbers_pred = self.network.predict(numbers)
         return numbers_pred
 
     def _return_numbers(self, img: np.ndarray):
@@ -95,8 +112,39 @@ class RewardDetector:
         self.trained = True
 
 
+def train_detector(image_path: str, det: RewardDetector):
+    names = os.listdir(image_path)
+    names = names[1:]
+    images = [image_path + image for image in names]
+
+    preprocessor = RewardPreprocessor((50, 200))
+    names = [name[6:-4] for name in names if name[6:-4] != "_"]
+
+    images_array = []
+    all_labels = []
+    for index, img_path in enumerate(images):
+        img = imread(img_path)
+        processed_img = preprocessor.preprocess(img)
+        numbers = det._return_numbers(processed_img)
+        labels = [10 if char == "X" else int(char) for char in names[index]]
+        if len(labels) == numbers.shape[0]:
+            images_array.append(numbers)
+            all_labels += labels
+        else:
+            logging.warning("Image {} will be skipped since detected numbers and labels doesn´t fit togther.")
+
+    data = np.concatenate(images_array, axis=0)
+    data = data.reshape(data.shape + (1,))
+
+    labels = to_categorical(np.array(all_labels), num_classes=11)
+
+    det.train_network(data, labels)
+
+
 if __name__=="__main__":
-    img_path = "../../data/img/reward_catching/00007_2800X2.jpg"
+    img_path = "../../data/reward_catching/00007_2800X2.jpg"
     det = RewardDetector(RewardPreprocessor((50, 200)))
+    train_detector("../../data/reward_catching/", det)
+
     img = imread(img_path)
     det.get_reward(img)
