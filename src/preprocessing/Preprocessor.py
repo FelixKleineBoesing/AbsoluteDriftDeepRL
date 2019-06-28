@@ -1,5 +1,6 @@
 import abc
 import numpy as np
+import cv2
 
 
 class Preprocessor(abc.ABC):
@@ -28,8 +29,7 @@ class Preprocessor(abc.ABC):
 
     def _resize_img(self, img: np.ndarray, img_size: tuple):
         # resize img to specified range
-        from scipy.misc import imresize
-        img = imresize(img, img_size)
+        img = cv2.resize(img, img_size)
         return img
 
 
@@ -42,19 +42,22 @@ class RewardPreprocessor(Preprocessor):
         super().__init__(img_size=img_size)
 
     def preprocess(self, img: np.ndarray):
-        img = self._crop_image(img)
-        img = self._resize_img(img, self.img_size)
-        img = self._convert_to_grey(img)
-        img = self._normalize_img(img)
-        img = self._cut_smaller(img)
+        left_img, right_img = self._crop_image(img)
+        left_img = self._convert_to_grey(left_img)
+        right_img = self._convert_to_grey(right_img)
+        left_img = self._normalize_img(left_img)
+        right_img = self._normalize_img(right_img)
+        left_img = self._cut_smaller(left_img)
+        right_img = self._cut_smaller(right_img)
 
-        return img
+        return left_img, right_img
 
     def _crop_image(self, img: np.ndarray):
         # slice img here (crop top/bottom,  left/right edgeds which are not really neceessary
-        img = img[18:68, 300:440, :]
+        left_img = img[18:68, 90:256, :]
+        right_img = img[18:68, 300:440, :]
 
-        return img
+        return left_img, right_img
 
     def _cut_smaller(self, img: np.ndarray):
         min_brightness_rows = np.min(img[:, :, 0], 1)

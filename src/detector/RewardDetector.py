@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.misc import imread
+import cv2
 import tensorflow as tf
 from tensorflow.keras.layers import Dense, Conv2D, Flatten, MaxPooling2D
 from keras.utils.np_utils import to_categorical
@@ -123,8 +123,8 @@ def train_detector(image_path: str, det: RewardDetector):
     images_array = []
     all_labels = []
     for index, img_path in enumerate(images):
-        img = imread(img_path)
-        processed_img = preprocessor.preprocess(img)
+        img = cv2.imread(img_path)
+        left_img, right_img = preprocessor.preprocess(img)
         numbers = det._return_numbers(processed_img)
         labels = [10 if char == "X" else int(char) for char in names[index]]
         if len(labels) == numbers.shape[0]:
@@ -146,5 +146,5 @@ if __name__=="__main__":
     det = RewardDetector(RewardPreprocessor((50, 200)))
     train_detector("../../data/reward_catching/", det)
 
-    img = imread(img_path)
+    img = cv2.imread(img_path)
     det.get_reward(img)
